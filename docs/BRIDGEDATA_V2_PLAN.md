@@ -31,13 +31,14 @@ train_v2.0/
 
 val_v2.0/
   metadata.json
-  metadata/
-    metadata_0.json
-  videos/
-    video_0.bin
-  segment_indices/
-    segment_idx_0.bin
+  metadata_0.json
+  video_0.bin
+  segment_idx_0.bin
 ```
+
+The validation split is flat because `RawTokenDataset(..., is_eval=True)` reads
+`metadata_{rank}.json`, `video_{rank}.bin`, and `segment_idx_{rank}.bin`
+directly from the eval directory.
 
 Each tokenized video chunk should have shape:
 
@@ -60,6 +61,10 @@ where the three latent timesteps decode to a 17-frame RGB clip with Cosmos
 
    - RLDS episodes with `steps`;
    - raw videos or frame folders as fallback.
+
+   This is now implemented in
+   [`notebooks/bridge-v2-preprocessing.ipynb`](../notebooks/bridge-v2-preprocessing.ipynb),
+   separate from the DROID preprocessing notebook.
 
 2. **Select camera stream**
 
@@ -98,9 +103,10 @@ where the three latent timesteps decode to a 17-frame RGB clip with Cosmos
 
 6. **Write 1X-compatible binary shards**
 
-   Save all token chunks into `videos/video_*.bin`; write matching
+   Save training token chunks into `videos/video_*.bin`; write matching
    `metadata/metadata_*.json`, `metadata.json`, and
-   `segment_indices/segment_idx_*.bin`.
+   `segment_indices/segment_idx_*.bin`. Save validation shards in the flat eval
+   layout used by `RawTokenDataset(..., is_eval=True)`.
 
 7. **Verify compatibility**
 

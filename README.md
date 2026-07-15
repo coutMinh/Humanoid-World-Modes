@@ -16,13 +16,16 @@ Project page used for comparison: https://qasim-ali0.github.io/projects/humanoid
 
 ## What We Implemented
 
-Our implementation centers on three Kaggle notebooks in [`notebooks/`](notebooks):
+Our implementation centers on Kaggle notebooks and the final seminar slide deck in [`notebooks/`](notebooks):
 
 | Notebook | Purpose |
 |---|---|
-| [`Training.ipynb`](notebooks/Training.ipynb) | Kaggle-ready 1XGPT training and inference for visual-only Masked-HWM |
-| [`Novel_dataset_preparation.ipynb`](notebooks/Novel_dataset_preparation.ipynb) | Preprocess raw DROID robot videos/RLDS data into the 1X-style tokenized format |
-| [`Finetuning.ipynb`](notebooks/Finetuning.ipynb) | Zero-shot inference on DROID and DROID fine-tuning from a 1X-trained checkpoint |
+| [`hwm-pretraining.ipynb`](notebooks/hwm-pretraining.ipynb) | Kaggle-ready 1XGPT training and inference for visual-only Masked-HWM |
+| [`droid-preprocessing.ipynb`](notebooks/droid-preprocessing.ipynb) | Preprocess raw DROID robot videos/RLDS data into the 1X-style tokenized format |
+| [`bridge-v2-preprocessing.ipynb`](notebooks/bridge-v2-preprocessing.ipynb) | Preprocess BridgeData V2 into the same 1X-style tokenized format and compare it against the standard input layout |
+| [`hwm-finetuning.ipynb`](notebooks/hwm-finetuning.ipynb) | Zero-shot inference plus DROID and BridgeData V2 fine-tuning from a 1X-trained checkpoint |
+| [`eval-masked-hwm-kaggle.ipynb`](notebooks/eval-masked-hwm-kaggle.ipynb) | Multi-checkpoint, multi-dataset evaluation with token and pixel metrics |
+| [`Slide.pdf`](notebooks/Slide.pdf) | Final seminar slide deck |
 
 The main implementation decisions are:
 
@@ -87,7 +90,7 @@ checkpoint directly on DROID and after short DROID fine-tuning.
 
 ### Quantitative DROID Summary
 
-The following numbers are from `Finetuning.ipynb` over four paired DROID
+The following numbers are from `hwm-finetuning.ipynb` over four paired DROID
 examples. They are intended as a small-scale adaptation check, not a full
 benchmark.
 
@@ -142,13 +145,11 @@ WITH_ACT = False
 
 ---
 
-## BridgeData V2 Plan
+## BridgeData V2 Preparation
 
-At the current project stage, DROID is the completed novel dataset. BridgeData
-V2 is the second target dataset, but it has not yet been fully processed or
-fine-tuned in this artifact.
-
-The proposed BridgeData V2 solution is to reuse the DROID preprocessing contract:
+BridgeData V2 now has its own preprocessing notebook so the DROID path stays
+simple and reproducible. The Bridge notebook reuses the same DROID preprocessing
+contract:
 
 1. Load BridgeData V2 trajectories.
 2. Select a consistent camera stream, preferably the main external or wrist view.
@@ -168,7 +169,9 @@ bridge_hwm_tokenized/
     ...
 ```
 
-7. Verify compatibility with the same loader used for 1XGPT and DROID.
+7. Verify compatibility with the same loader used for 1XGPT and DROID, then
+   compare the generated folder structure against the standard 1X-style Kaggle
+   input dataset.
 8. Run zero-shot inference and a bounded fine-tuning pass with `WITH_ACT=False`.
 
 For details, see [`docs/BRIDGEDATA_V2_PLAN.md`](docs/BRIDGEDATA_V2_PLAN.md).
@@ -180,10 +183,12 @@ For details, see [`docs/BRIDGEDATA_V2_PLAN.md`](docs/BRIDGEDATA_V2_PLAN.md).
 ```text
 Masked-HWM/
   notebooks/
-    Training.ipynb
-    Novel_dataset_preparation.ipynb
-    Finetuning.ipynb
-    paper.pdf
+    hwm-pretraining.ipynb
+    droid-preprocessing.ipynb
+    bridge-v2-preprocessing.ipynb
+    hwm-finetuning.ipynb
+    eval-masked-hwm-kaggle.ipynb
+    Slide.pdf
   docs/
     media/
       extracted rollout PNG/GIF artifacts
@@ -208,12 +213,16 @@ The notebooks are designed for Kaggle:
 1. Add the 1X-style tokenized world-model dataset as a Kaggle input.
 2. Add the Cosmos tokenizer checkpoint/dataset containing `encoder.jit` and
    `decoder.jit`.
-3. Run [`Training.ipynb`](notebooks/Training.ipynb) to train/infer on 1XGPT.
-4. Run [`Novel_dataset_preparation.ipynb`](notebooks/Novel_dataset_preparation.ipynb)
+3. Run [`hwm-pretraining.ipynb`](notebooks/hwm-pretraining.ipynb) to train/infer on 1XGPT.
+4. Run [`droid-preprocessing.ipynb`](notebooks/droid-preprocessing.ipynb)
    to produce a DROID tokenized dataset.
-5. Upload the tokenized DROID output as a Kaggle dataset.
-6. Run [`Finetuning.ipynb`](notebooks/Finetuning.ipynb) for DROID zero-shot and
-   fine-tuning.
+5. Run [`bridge-v2-preprocessing.ipynb`](notebooks/bridge-v2-preprocessing.ipynb)
+   to produce a separate BridgeData V2 tokenized dataset.
+6. Upload the tokenized DROID or Bridge output as a Kaggle dataset.
+7. Run [`hwm-finetuning.ipynb`](notebooks/hwm-finetuning.ipynb) for zero-shot
+   inference and fine-tuning.
+8. Run [`eval-masked-hwm-kaggle.ipynb`](notebooks/eval-masked-hwm-kaggle.ipynb)
+   for the final benchmark table and qualitative rollout exports.
 
 ---
 
@@ -225,8 +234,9 @@ The notebooks are designed for Kaggle:
   egocentric datasets.
 - The reported DROID numbers are small-sample notebook results, not a full
   paper-scale benchmark.
-- BridgeData V2 remains a planned extension unless the preprocessing and
-  fine-tuning notebooks are executed on that dataset.
+- BridgeData V2 preprocessing is separated from DROID, but Bridge fine-tuning
+  results should only be reported after the full preprocessing, verification,
+  inference, and fine-tuning notebook sequence is executed.
 
 ---
 
